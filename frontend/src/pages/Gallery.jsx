@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { client, urlFor } from '../client';
+import CodeBlock from '../components/CodeBlock';
 
 const platforms = ['All', 'React', 'Vue', 'Svelte', 'HTML/CSS', 'Tailwind'];
 
@@ -8,6 +9,7 @@ const Gallery = () => {
   const [filteredComponents, setFilteredComponents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     const query = '*[_type == "component"] | order(createdAt desc)';
@@ -20,6 +22,7 @@ const Gallery = () => {
 
   const handleFilter = (platform) => {
     setActiveFilter(platform);
+    setExpandedId(null); // Reset expanded code on filter change
     if (platform === 'All') {
       setFilteredComponents(components);
     } else {
@@ -27,6 +30,10 @@ const Gallery = () => {
         components.filter((c) => c.platform.toLowerCase() === platform.toLowerCase())
       );
     }
+  };
+
+  const toggleCode = (id) => {
+    setExpandedId(expandedId === id ? null : id);
   };
 
   if (loading) return <div className="loading">Loading components...</div>;
@@ -62,8 +69,17 @@ const Gallery = () => {
                 <h3>{component.title}</h3>
                 <p className="author">By {component.author || 'Anonymous'}</p>
                 <div className="card-actions">
-                  <button className="view-btn">View Code</button>
+                  <button 
+                    className="view-btn"
+                    onClick={() => toggleCode(component._id)}
+                  >
+                    {expandedId === component._id ? 'Hide Code' : 'View Code'}
+                  </button>
                 </div>
+                
+                {expandedId === component._id && (
+                  <CodeBlock code={component.codeSnippet || '// No code provided'} />
+                )}
               </div>
             </div>
           ))
