@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { client, urlFor } from '../client';
 import CodeBlock from '../components/CodeBlock';
+import ComponentModal from '../components/ComponentModal';
 
 const platforms = ['All', 'React', 'Vue', 'Svelte', 'HTML/CSS', 'Tailwind'];
 
@@ -9,7 +10,7 @@ const Gallery = () => {
   const [filteredComponents, setFilteredComponents] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState(null);
+  const [selectedComponent, setSelectedComponent] = useState(null);
 
   useEffect(() => {
     const query = '*[_type == "component"] | order(createdAt desc)';
@@ -22,7 +23,6 @@ const Gallery = () => {
 
   const handleFilter = (platform) => {
     setActiveFilter(platform);
-    setExpandedId(null); // Reset expanded code on filter change
     if (platform === 'All') {
       setFilteredComponents(components);
     } else {
@@ -30,10 +30,6 @@ const Gallery = () => {
         components.filter((c) => c.platform.toLowerCase() === platform.toLowerCase())
       );
     }
-  };
-
-  const toggleCode = (id) => {
-    setExpandedId(expandedId === id ? null : id);
   };
 
   if (loading) return <div className="loading">Loading components...</div>;
@@ -60,7 +56,7 @@ const Gallery = () => {
           filteredComponents.map((component) => (
             <div key={component._id} className="component-card">
               {component.previewImage && (
-                <div className="card-image">
+                <div className="card-image" onClick={() => setSelectedComponent(component)}>
                   <img src={urlFor(component.previewImage).url()} alt={component.title} />
                 </div>
               )}
@@ -71,15 +67,11 @@ const Gallery = () => {
                 <div className="card-actions">
                   <button 
                     className="view-btn"
-                    onClick={() => toggleCode(component._id)}
+                    onClick={() => setSelectedComponent(component)}
                   >
-                    {expandedId === component._id ? 'Hide Code' : 'View Code'}
+                    View Details
                   </button>
                 </div>
-                
-                {expandedId === component._id && (
-                  <CodeBlock code={component.codeSnippet || '// No code provided'} />
-                )}
               </div>
             </div>
           ))
@@ -87,6 +79,13 @@ const Gallery = () => {
           <p className="no-results">No components found for this platform.</p>
         )}
       </div>
+
+      {selectedComponent && (
+        <ComponentModal 
+          component={selectedComponent} 
+          onClose={() => setSelectedComponent(null)} 
+        />
+      )}
     </div>
   );
 };
