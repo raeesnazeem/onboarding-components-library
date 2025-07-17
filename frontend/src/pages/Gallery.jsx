@@ -32,7 +32,14 @@ const Gallery = () => {
     }
   };
 
-  if (loading) return <div className="loading">Loading components...</div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading components...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="gallery-container">
@@ -55,11 +62,13 @@ const Gallery = () => {
         {filteredComponents.length > 0 ? (
           filteredComponents.map((component) => (
             <div key={component._id} className="component-card">
-              {component.previewImage && (
-                <div className="card-image" onClick={() => setSelectedComponent(component)}>
+              <div className="card-image" onClick={() => setSelectedComponent(component)}>
+                {component.previewImage ? (
                   <img src={urlFor(component.previewImage).url()} alt={component.title} />
-                </div>
-              )}
+                ) : (
+                  <div className="image-placeholder">No Preview</div>
+                )}
+              </div>
               <div className="card-content">
                 <span className="platform-badge">{component.platform}</span>
                 <h3>{component.title}</h3>
@@ -76,7 +85,10 @@ const Gallery = () => {
             </div>
           ))
         ) : (
-          <p className="no-results">No components found for this platform.</p>
+          <div className="no-results">
+            <h3>No components found</h3>
+            <p>Try selecting a different platform filter.</p>
+          </div>
         )}
       </div>
 
